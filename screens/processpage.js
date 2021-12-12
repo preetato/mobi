@@ -1,5 +1,7 @@
 import { StatusBar } from "expo-status-bar";
 import React, { useState, useEffect, useContext, useRef } from "react";
+
+import * as Random from "expo-random";
 import {
   StyleSheet,
   Text,
@@ -78,7 +80,7 @@ export default function ProcessPage() {
     setCurrentPosition(currentPosition + 1);
   };
   const [isStartTimer, setIsStartTimer] = useState(false);
-
+  const [newBookingId, setnewBookingId] = useState(undefined);
   const { processId, setProcess, queueId, setQueue } = useContext(UserContext);
 
   useEffect(() => {
@@ -89,30 +91,59 @@ export default function ProcessPage() {
      *
      */
     if (!queueId) {
-      console.log("creating booking");
       createBooking(processId._id)
         .then((res) => {
+          console.log("createbookingresponse", res);
           setQueue(res._id);
           setIsStartTimer(true);
         })
         .catch((err) => {
-          console.log(err);
+          console.error(err);
         });
     }
 
     return () => {
       if (queueId) {
-        cancelBooking(queueId).then((res) => {
-          console.log("useEffect, Booking Cancelled");
-        });
+        cancelBooking(queueId)
+          .then((res) => {
+            console.log("useEffect, Booking Cancelled");
+          })
+          .catch((err) => {
+            console.error(err);
+          });
         setQueue(undefined);
       }
     };
-  }, [queueId]);
+  }, [queueId, newBookingId]);
 
   useEffect(() => {
     console.log("Changes to QueueId", queueId);
   }, [queueId]);
+
+  const actionOnTimerDone = () => {
+    /**
+     * call to reject booking
+     */
+    console.log("rejecting booking", queueId);
+    rejectBooking(queueId)
+      .then((res) => {
+        console.log("Booking now rejected");
+        setnewBookingId(() => {
+          /**
+           * delete queueId from global state
+           */
+          setQueue(undefined);
+          return Random.getRandomBytes(64);
+        });
+      })
+      .then(() => {
+        console.log("queueId After actiontimerdone", queueId);
+      })
+      .catch((err) => {
+        console.log("Error on rejectBooking, actionOnTimerDone");
+        console.error(err);
+      });
+  };
 
   const data = [
     {
@@ -169,7 +200,11 @@ export default function ProcessPage() {
                       marginTop: 16,
                     }}
                   >
-                    <TimerComponent isStartTimer={isStartTimer} />
+                    <TimerComponent
+                      initialSeconds={3}
+                      isStartTimer={isStartTimer}
+                      actionOnTimerDone={actionOnTimerDone}
+                    />
                   </View>
                 )}
               </View>

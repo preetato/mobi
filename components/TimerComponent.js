@@ -3,44 +3,44 @@ import { Text, View } from "react-native";
 export default function TimerComponent({
   initialSeconds = 10,
   isStartTimer = false,
+  actionOnTimerDone = undefined,
 }) {
   const timeoutRef = useRef();
   const [timerSeconds, setTimerSeconds] = useState(initialSeconds);
   const [timerDone, setTimerDone] = useState(false);
   const startTimerFunc = () => {
     timeoutRef.current = setInterval(() => {
-      //   if (timerSeconds > 0) {
-      //     setTimerSeconds((prevState) => {
-      //       return prevState > 0 && prevState - 1;
-      //     });
-      //   } else {
-      //     console.log("clearing tim");
-      //     clearTimeout(timeoutRef.current);
-      //   }
-      //   console.log(
-      //     "timerSeconds",
-      //     timerSeconds,
-      //     "timerSecondsisGreaterThan0",
-      //     timerSeconds > 0
-      //   );
-      //   if (timerSeconds > 0) {
-      //     setTimerSeconds((prevState) => prevState - 1);
-      //   } else {
-      //     clearInterval(timeoutRef.current);
-      //   }
+      setTimerSeconds((prevState) => {
+        if (prevState > 0) {
+          return prevState - 1;
+        } else {
+          clearInterval(timeoutRef.current);
+
+          return prevState;
+        }
+      });
     }, 1000);
   };
 
   useEffect(() => {
-    // console.log("timerSecondsState", timerSeconds);
-  }, [timerSeconds]);
-  useEffect(() => {
+    console.log("changes to isStartTimer", isStartTimer);
     if (isStartTimer === true) {
       startTimerFunc();
     } else {
       clearTimeout(timeoutRef.current);
     }
   }, [isStartTimer]);
+
+  useEffect(() => {
+    if (timerSeconds === 0) {
+      setTimerDone(true);
+      if (actionOnTimerDone) {
+        console.log("actionOnTimerDone");
+        actionOnTimerDone();
+      }
+    }
+  }, [timerSeconds]);
+
   if (timerDone) {
     return (
       <Text

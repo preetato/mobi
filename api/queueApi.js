@@ -11,6 +11,9 @@ export const cancelBooking = (queueId) => {
       return res.data.message;
     })
     .catch((err) => {
+      if (err.response.data.error) {
+        throw `cancelBooking Error ${err.response.data.error}`;
+      }
       console.error("error cancelling booking", err);
 
       throw err.message;
@@ -51,6 +54,9 @@ export const rejectBooking = (queueId) => {
       return res.data;
     })
     .catch((err) => {
+      if (err.response.data.error) {
+        throw `Error rejectBooking ${err.response.data.error}`;
+      }
       console.error("error rejecting booking", err);
       throw err.message;
     });
