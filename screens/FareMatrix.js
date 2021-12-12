@@ -13,19 +13,17 @@ const { brand } = Colors;
 import axios from "axios";
 
 const FareMatrix = ({ navigation }) => {
-  const [dataSource, setDataSource] = useState([]);
+  const [dataSource, setDataSource] = useState(undefined);
 
   useEffect(() => {
     loadData();
   }, []);
 
   const loadData = () => {
-    const url = "https://tranquil-wildwood-09279.herokuapp.com/fare";
     axios
-      .get(url)
+      .get("/fare")
       .then((response) => {
         const { status, data } = response;
-
         if (status == 200) {
           setDataSource(data);
         }
@@ -84,7 +82,7 @@ const FareMatrix = ({ navigation }) => {
         ListHeaderComponent={ListHeader}
         renderItem={ListItem}
         ListFooterComponent={() =>
-          dataSource.length <= 0 && (
+          !dataSource && (
             <ActivityIndicator
               style={{ marginTop: 100 }}
               size="large"

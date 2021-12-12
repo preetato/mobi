@@ -1,20 +1,18 @@
-import styled from 'styled-components/native'
-import { View, Text, TouchableOpacity, TextInput, Image } from 'react-native';
-import Constants from 'expo-constants';
+import styled from "styled-components/native";
+import { View, Text, TouchableOpacity, TextInput, Image } from "react-native";
+import Constants from "expo-constants";
 
 const StatusBarHeight = Constants.statusBarHeight;
 
 //colors
-export const Colors = 
-{
-primary: '#ffffff',
-  secondary: '#1a237e',
-  tertiary: '#ff5722',
-  darkLight: '#9CA3AF',
-  brand: '#ff5722',
-  green: '#10B981',
-  red: '#EF4444',
-
+export const Colors = {
+  primary: "#ffffff",
+  secondary: "#1a237e",
+  tertiary: "#ff5722",
+  darkLight: "#9CA3AF",
+  brand: "#ff5722",
+  green: "#10B981",
+  red: "#EF4444",
 };
 
 const { primary, secondary, tertiary, darkLight, brand, green, red } = Colors;
@@ -147,7 +145,7 @@ export const ButtonText = styled.Text`
 export const MsgBox = styled.Text`
   text-align: center;
   font-size: 13px;
-  color: ${(props) => (props.type == 'SUCCESS' ? green : red)};
+  color: ${(props) => (props.type == "SUCCESS" ? green : red)};
 `;
 
 export const Line = styled.View`

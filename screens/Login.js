@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { StatusBar } from "expo-status-bar";
 
 //formik
@@ -29,6 +29,8 @@ import { View, ActivityIndicator } from "react-native";
 //colors
 const { darkLight, brand, primary } = Colors;
 
+//keyboard
+import KeyboardAvoidingWrapper from "./../components/KeyboardAvoidingWrapper";
 // api cli
 import axios from "axios";
 import UserContext from "../auth/context";
@@ -41,9 +43,9 @@ const Login = ({ navigation }) => {
 
   const handleLogin = (credentials, setSubmitting) => {
     handleMessage(null);
-    const url = "https://tranquil-wildwood-09279.herokuapp.com/user/signin";
+
     axios
-      .post(url, credentials)
+      .post("/user/signin", credentials)
       .then((response) => {
         const result = response.data;
         const { status, message, data } = result;
@@ -68,81 +70,86 @@ const Login = ({ navigation }) => {
     setMessageType(type);
   };
 
+  useEffect(() => {
+    console.log(axios.defaults);
+  }, []);
   return (
-    <StyledContainer>
-      <StatusBar style="dark" />
-      <InnerContainer>
-        <PageLogo
-          resizeMode="cover"
-          source={require("./../assets/img/tricycle.png")}
-        />
-        <PageTitle>E-Tulod</PageTitle>
-        <SubTitle>Account Login</SubTitle>
+    <KeyboardAvoidingWrapper>
+      <StyledContainer>
+        <StatusBar style="dark" />
+        <InnerContainer>
+          <PageLogo
+            resizeMode="cover"
+            source={require("./../assets/img/tricycle.png")}
+          />
+          <PageTitle>E-Tulod</PageTitle>
+          <SubTitle>Account Login</SubTitle>
 
-        <Formik
-          initialValues={{ email: "", password: "" }}
-          onSubmit={(values, { setSubmitting }) => {
-            if (values.email == "" || values.password == "") {
-              handleMessage("Please fill all the empty fields!");
-              setSubmitting(false);
-            } else {
-              handleLogin(values, setSubmitting);
-            }
-          }}
-        >
-          {({
-            handleChange,
-            handleBlur,
-            handleSubmit,
-            values,
-            isSubmitting,
-          }) => (
-            <StyledFormArea>
-              <MyTextInput
-                label="Email Address"
-                icon="mail"
-                placeholder="email@email.com"
-                placeholderTextColor={darkLight}
-                onChangeText={handleChange("email")}
-                onBlur={handleBlur("email")}
-                value={values.email}
-                keyboardType="email-address"
-              />
+          <Formik
+            initialValues={{ email: "", password: "" }}
+            onSubmit={(values, { setSubmitting }) => {
+              if (values.email == "" || values.password == "") {
+                handleMessage("Please fill all the empty fields!");
+                setSubmitting(false);
+              } else {
+                handleLogin(values, setSubmitting);
+              }
+            }}
+          >
+            {({
+              handleChange,
+              handleBlur,
+              handleSubmit,
+              values,
+              isSubmitting,
+            }) => (
+              <StyledFormArea>
+                <MyTextInput
+                  label="Email Address"
+                  icon="mail"
+                  placeholder="email@email.com"
+                  placeholderTextColor={darkLight}
+                  onChangeText={handleChange("email")}
+                  onBlur={handleBlur("email")}
+                  value={values.email}
+                  keyboardType="email-address"
+                />
 
-              <MyTextInput
-                label="Password"
-                placeholder="* * * * * * * *"
-                placeholderTextColor={darkLight}
-                onChangeText={handleChange("password")}
-                onBlur={handleBlur("password")}
-                value={values.password}
-                icon="lock"
-                secureTextEntry={hidePassword}
-                isPassword={true}
-                hidePassword={hidePassword}
-                setHidePassword={setHidePassword}
-              />
-              <MsgBox type={messageType}>{message}</MsgBox>
-              {!isSubmitting && (
-                <StyledButton onPress={handleSubmit}>
-                  <ButtonText>Login</ButtonText>
+                <MyTextInput
+                  label="Password"
+                  placeholder="* * * * * * * *"
+                  placeholderTextColor={darkLight}
+                  onChangeText={handleChange("password")}
+                  onBlur={handleBlur("password")}
+                  value={values.password}
+                  icon="lock"
+                  secureTextEntry={hidePassword}
+                  isPassword={true}
+                  hidePassword={hidePassword}
+                  setHidePassword={setHidePassword}
+                />
+                <MsgBox type={messageType}>{message}</MsgBox>
+                {!isSubmitting && (
+                  <StyledButton onPress={handleSubmit}>
+                    <ButtonText>Login</ButtonText>
+                  </StyledButton>
+                )}
+                {isSubmitting && (
+                  <StyledButton disabled={true}>
+                    <ActivityIndicator size="large" color={primary} />
+                  </StyledButton>
+                )}
+
+                <Line />
+                <StyledButton onPress={() => navigation.navigate("Signup")}>
+                  <ButtonText>Register</ButtonText>
                 </StyledButton>
-              )}
-              {isSubmitting && (
-                <StyledButton disabled={true}>
-                  <ActivityIndicator size="large" color={primary} />
-                </StyledButton>
-              )}
-
-              <Line />
-              <StyledButton onPress={() => navigation.navigate("Signup")}>
-                <ButtonText>Register</ButtonText>
-              </StyledButton>
-            </StyledFormArea>
-          )}
-        </Formik>
-      </InnerContainer>
-    </StyledContainer>
+              </StyledFormArea>
+            )}
+          </Formik>
+        </InnerContainer>
+      </StyledContainer>
+    </KeyboardAvoidingWrapper>
   );
 };
 
