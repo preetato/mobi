@@ -44,7 +44,7 @@ const Signup = ({ navigation }) => {
   const [date, setDate] = useState(new Date(2000, 0, 1));
 
   const [message, setMessage] = useState();
-  const [messageType, setMessageType] = useState();
+  const [messageType, setMessageType] = useState<"FAILED" | undefined>();
   // Actual value to be sent
   const [dob, setDob] = useState();
 
@@ -70,7 +70,7 @@ const Signup = ({ navigation }) => {
         if (status !== "SUCCESS") {
           handleMessage(message, status);
         } else {
-          persistLogin({ ...data }, message, status);
+          // persistLogin({ ...data }, message, status);
         }
         setSubmitting(false);
       })
@@ -249,7 +249,7 @@ const MyTextInput = ({
   isDate,
   showDatePicker,
   ...props
-}) => {
+}: Partial<Record<any, any>>) => {
   return (
     <View>
       <LeftIcon>

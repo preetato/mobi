@@ -1,5 +1,5 @@
 import { StatusBar } from "expo-status-bar";
-import React, { useState, useEffect, useContext, useRef } from "react";
+import React, { useState, useEffect, useContext, useRef, Props } from "react";
 
 import * as Random from "expo-random";
 import {
@@ -9,6 +9,7 @@ import {
   Dimensions,
   ViewComponent,
   TouchableOpacity,
+  Alert,
 } from "react-native";
 import { Button } from "react-native-paper";
 import StepIndicator from "react-native-step-indicator";
@@ -28,18 +29,14 @@ import {
   WelcomeContainer,
   WelcomeImage,
   Line,
-  StyledButtonn,
 } from "../components/styles";
 import UserContext from "../auth/context";
-import {
-  booking,
-  rejectBooking,
-  cancelBooking,
-  createBooking,
-} from "../api/queueApi";
+import { rejectBooking, cancelBooking, createBooking } from "../api/queueApi";
 import TimerComponent from "../components/TimerComponent";
 const { width, height } = Dimensions.get("window");
 import axios from "axios";
+import { StackScreenProps } from "@react-navigation/stack";
+import { CompositeScreenProps, NavigationProp } from "@react-navigation/native";
 
 const labels = [
   "Cart",
@@ -73,77 +70,157 @@ const customStyles = {
   currentStepLabelColor: "#1a237e",
 };
 
-export default function ProcessPage() {
+export default function ProcessPage({ navigation }: { navigation }) {
   const [currentPosition, setCurrentPosition] = useState(0);
   const [disableNextButton, setDisableNextButton] = useState(false);
   const nextStep = () => {
     setCurrentPosition(currentPosition + 1);
   };
   const [isStartTimer, setIsStartTimer] = useState(false);
-  const [newBookingId, setnewBookingId] = useState(undefined);
-  const { processId, setProcess, queueId, setQueue } = useContext(UserContext);
+  const { processId, setProcess, queue, setQueue } = useContext(UserContext);
 
   useEffect(() => {
-    /**
-     * create booking
-     *
-     * start timer
-     *
-     */
-    if (!queueId) {
-      createBooking(processId._id)
-        .then((res) => {
-          console.log("createbookingresponse", res);
-          setQueue(res._id);
-          setIsStartTimer(true);
-        })
-        .catch((err) => {
-          console.error(err);
-        });
-    }
+    navigation.addListener("beforeRemove", (e) => {
+      if (!queue) {
+        // If we don't have unsaved changes, then we don't need to do anything
+        return;
+      } else if (queue) {
+        e.preventDefault();
 
-    return () => {
-      if (queueId) {
-        cancelBooking(queueId)
+        cancelBooking(queue._id)
           .then((res) => {
-            console.log("useEffect, Booking Cancelled");
+            Alert.alert("Booking Cancelled", "Driver Booking is Cancelled", [
+              {
+                style: "default",
+                text: "OK",
+              },
+            ]);
           })
           .catch((err) => {
-            console.error(err);
+            console.log("Error in cancelBooking");
+            console.log(err);
+          })
+          .finally(() => {
+            setQueue(undefined);
+            navigation.navigate("ServicePage");
+            return;
           });
-        setQueue(undefined);
       }
-    };
-  }, [queueId, newBookingId]);
+    });
+  }, [queue]);
+  useEffect(() => {
+    /**
+     * create booking and start timer
+     *
+     */
+
+    createBooking(processId._id)
+      .then((response) => {
+        setQueue(response);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+
+    // return () => {
+    //   cancelBooking(queue._id)
+    //     .then((res) => {
+    //       Alert.alert("Booking Cancelled", "Driver Booking is Cancelled", [
+    //         {
+    //           style: "default",
+    //           text: "OK",
+    //         },
+    //       ]);
+    //     })
+    //     .catch((err) => {
+    //       console.log("Error in cancelBooking");
+    //       console.log(err);
+    //     })
+    //     .finally(() => {
+    //       setQueue(undefined);
+    //       return;
+    //     });
+  }, [processId]);
 
   useEffect(() => {
-    console.log("Changes to QueueId", queueId);
-  }, [queueId]);
+    console.log("Changes in queue", queue);
+  }, [queue]);
+
+  // useEffect(() => {
+  //   /**
+  //    * create booking
+  //    *
+  //    * start timer
+  //    *
+  //    */
+  //   if (!queueId) {
+  //     createBooking(processId._id)
+  //       .then((res) => {
+  //         setQueue(res);
+  //         setIsStartTimer(true);
+  //       })
+  //       .catch((err) => {
+  //         console.error(err);
+  //       });
+  //   }
+  //   navigation.addListener("beforeRemove", (e) => {
+  //     console.log("NAVIGATION LISTENER ACTIVATED");
+  //     console.log(queueId);
+  //     if (!queueId) {
+  //       // If we don't have unsaved changes, then we don't need to do anything
+  //       return;
+  //     } else {
+  //       cancelBooking(queueId)
+  //         .then((res) => {
+  //           Alert.alert("Booking Cancelled", "Driver Booking is Cancelled", [
+  //             {
+  //               style: "default",
+  //               text: "OK",
+  //             },
+  //           ]);
+  //         })
+  //         .catch((err) => {
+  //           console.error(err);
+  //         })
+  //         .finally(() => {
+  //           setQueue(undefined);
+  //         });
+  //     }
+
+  //     e.preventDefault();
+  //   });
+
+  //   // return () => {
+  //   //   if (queueId) {
+
+  //   //   }
+  //   // };
+  // }, [navigation]);
+
+  // useEffect(() => {
+  //   console.log("Changes to QueueId", queueId);
+  // }, [queueId]);
 
   const actionOnTimerDone = () => {
     /**
      * call to reject booking
      */
-    console.log("rejecting booking", queueId);
-    rejectBooking(queueId)
-      .then((res) => {
-        console.log("Booking now rejected");
-        setnewBookingId(() => {
-          /**
-           * delete queueId from global state
-           */
-          setQueue(undefined);
-          return Random.getRandomBytes(64);
-        });
-      })
-      .then(() => {
-        console.log("queueId After actiontimerdone", queueId);
-      })
-      .catch((err) => {
-        console.log("Error on rejectBooking, actionOnTimerDone");
-        console.error(err);
-      });
+    // rejectBooking(queueId)
+    //   .then((res) => {})
+    //   .then(() => {
+    //     console.log("queueId After actiontimerdone", queueId);
+    //   })
+    //   .catch((err) => {
+    //     console.log("Error on rejectBooking, actionOnTimerDone");
+    //     console.error(err);
+    //   });
   };
+
+  useEffect(() => {
+    if (currentPosition === 0) {
+      setIsStartTimer(true);
+    }
+  }, [currentPosition]);
 
   const data = [
     {
@@ -185,7 +262,7 @@ export default function ProcessPage() {
           currentPosition={currentPosition}
           labels={labels}
           direction="vertical"
-          renderLabel={({ position, stepStaus, label, crntPosition }) => {
+          renderLabel={({ position, label }) => {
             return (
               <View style={styles.lblContainer}>
                 <Text style={styles.lblText}>{data[position].label}</Text>
@@ -269,11 +346,11 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontWeight: "bold",
   },
-  lblText: {
-    fontSize: 17,
-    color: "#fff",
-    fontWeight: "bold",
-  },
+  // lblText: {
+  //   fontSize: 17,
+  //   color: "#fff",
+  //   fontWeight: "bold",
+  // },
   status: {
     fontSize: 15,
     color: "white",

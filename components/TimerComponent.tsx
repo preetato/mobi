@@ -5,7 +5,8 @@ export default function TimerComponent({
   isStartTimer = false,
   actionOnTimerDone = undefined,
 }) {
-  const timeoutRef = useRef();
+  const timeoutRef = useRef<undefined | ReturnType<typeof setInterval>>();
+
   const [timerSeconds, setTimerSeconds] = useState(initialSeconds);
   const [timerDone, setTimerDone] = useState(false);
   const startTimerFunc = () => {

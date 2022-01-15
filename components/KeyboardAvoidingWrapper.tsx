@@ -6,11 +6,16 @@ import {
   Keyboard,
   ScrollView,
   TouchableWithoutFeedback,
+  Dimensions,
 } from "react-native";
 
 const KeyboardAvoidingWrapper = ({ children }) => {
   return (
-    <KeyboardAvoidingView style={{ flex: 1 }}>
+    <KeyboardAvoidingView
+      style={{
+        flex: 1,
+      }}
+    >
       <ScrollView>
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           {children}

@@ -24,7 +24,7 @@ const HomeStack = () => {
           headerTransparent: true,
           headerTitle: "",
           headerLeftContainerStyle: {
-            paddingleft: 20,
+            paddingLeft: 20,
           },
         }}
         initialRouteName="Welcome"

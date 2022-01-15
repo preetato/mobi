@@ -33,7 +33,7 @@ const { darkLight, brand, primary } = Colors;
 import KeyboardAvoidingWrapper from "./../components/KeyboardAvoidingWrapper";
 // api cli
 import axios from "axios";
-import UserContext from "../auth/context";
+import UserContext, { User } from "../auth/context";
 import storage from "../utility/storage";
 const Login = ({ navigation }) => {
   const [hidePassword, setHidePassword] = useState(true);
@@ -41,14 +41,28 @@ const Login = ({ navigation }) => {
   const [messageType, setMessageType] = useState();
   const context = useContext(UserContext);
 
-  const handleLogin = (credentials, setSubmitting) => {
+  const handleLogin = (
+    credentials: {
+      email: string;
+      password: string;
+    },
+    setSubmitting
+  ) => {
     handleMessage(null);
 
     axios
       .post("/user/signin", credentials)
       .then((response) => {
         const result = response.data;
-        const { status, message, data } = result;
+        const {
+          status,
+          message,
+          data,
+        }: {
+          status: string;
+          message: string;
+          data: User[];
+        } = result;
 
         if (status !== "SUCCESS") {
           handleMessage(message, status);
@@ -160,6 +174,12 @@ const MyTextInput = ({
   hidePassword,
   setHidePassword,
   ...props
+}: {
+  isPassword?: string;
+  label?: string;
+  icon?: string;
+  hidePassword?: string;
+  setHidePassword?: string;
 }) => {
   return (
     <View>

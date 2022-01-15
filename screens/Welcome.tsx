@@ -1,6 +1,6 @@
 import React, { useContext, useState } from "react";
 import { StatusBar } from "expo-status-bar";
-
+import { View } from "react-native";
 import {
   Avatar,
   WelcomeImage,
@@ -42,6 +42,7 @@ const Welcome = ({ navigation }) => {
               resizeMode="cover"
               source={require("./../assets/img/tricycle.png")}
             />
+
             <StyledButton onPress={() => navigation.navigate("ServicePage")}>
               <ButtonText>Proceed</ButtonText>
             </StyledButton>
@@ -49,9 +50,9 @@ const Welcome = ({ navigation }) => {
               <ButtonText>Fare Rate</ButtonText>
             </StyledButton>
             <Line />
-            <StyledButtonn onPress={() => handleLogout()}>
+            <StyledButton secondary onPress={() => handleLogout()}>
               <ButtonText>Logout</ButtonText>
-            </StyledButtonn>
+            </StyledButton>
           </StyledFormArea>
         </WelcomeContainer>
       </InnerContainer>

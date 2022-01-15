@@ -27,9 +27,15 @@ import {
   WelcomeContainer,
   WelcomeImage,
   Line,
-  StyledButtonn,
 } from "./../components/styles";
-import { View, ScrollView, ActivityIndicator } from "react-native";
+import {
+  View,
+  ScrollView,
+  ActivityIndicator,
+  Alert,
+  Dimensions,
+  SafeAreaView,
+} from "react-native";
 
 //keyboard
 import KeyboardAvoidingWrapper from "./../components/KeyboardAvoidingWrapper";
@@ -38,17 +44,27 @@ const { darkLight, brand, primary } = Colors;
 import axios from "axios";
 import UserContext from "../auth/context";
 import { getDrivers } from "../api/driversApi";
-import { createProcess } from "../api/queueApi";
+import { createProcess, Process, CreateProcess } from "../api/queueApi";
 
 const ServicePage = ({ navigation }) => {
-  const [message, setMessage] = useState();
-  const [messageType, setMessageType] = useState();
+  const [message, setMessage] = useState<string | undefined>();
+  const [messageType, setMessageType] = useState<
+    "SUCCESS | FAILED" | "ERROR" | undefined
+  >();
   const { user, setProcess } = useContext(UserContext);
 
+  const handleNoDriversAlert = () => {
+    Alert.alert("We're Sorry", "We have no drivers at the moment", [
+      {
+        text: "OK",
+        onPress: () => console.log("OK Pressed"),
+      },
+    ]);
+  };
   const handleConfirm = (values, setSubmitting) => {
-    handleMessage(undefined);
+    handleMessage();
 
-    let payload = {
+    let payload: CreateProcess = {
       destination: values.destination,
       location: values.currentLocation,
       cpnum: values.ContactNo,
@@ -61,73 +77,46 @@ const ServicePage = ({ navigation }) => {
      * Check first if there are drivers
      *
      */
-    console.log("Fetching Drivers");
     getDrivers()
       .then((drivers) => {
         if (drivers.length < 1) {
-          setMessage("No drivers available");
+          setMessage("No drivers available, Please try again in a few minutes");
           setMessageType(`ERROR`);
           setSubmitting(false);
-          throw new Error("There are no available drivers");
+          throw {
+            code: "NO DRIVER",
+          };
         }
         return createProcess({
           destination,
           location,
           cpnum,
           NoOfPassengers,
-          user,
+          user: user._id,
+        }).then((createProcessResponse) => {
+          setProcess(createProcessResponse);
+          setSubmitting(false);
+          navigation.navigate("ProcessPage");
         });
       })
-      .then((createProcessResponse) => {
-        setProcess(createProcessResponse);
-        console.log("Drivers are avialable, done creating process");
-
-        setSubmitting(false);
-        navigation.navigate("ProcessPage");
-        // console.log(createProcessResponse);
-      })
       .catch((err) => {
-        console.log("Error in gettign drivers from servicepage");
+        if (err?.code === "NO DRIVER") {
+          handleNoDriversAlert();
+        }
+        console.log("Error in getdtign drivers from servicepage");
         console.log(err);
+      })
+      .finally(() => {
+        setTimeout(() => {
+          setMessage(undefined);
+        }, 10000);
       });
-
-    /**
-     * Create process first
-     * Driver -> Queue
-     *
-     */
-
-    // axios
-    //   .post("/process", payload)
-    //   .then((response) => {
-    //     const { _id } = response.data;
-    //     const { status } = response;
-
-    //     setProcess({
-    //       destination,
-    //       location,
-    //       cpnum,
-    //       NoOfPassengers,
-    //       _id,
-    //     });
-
-    //     if (status == 200) {
-    //       setSubmitting(false);
-    //       navigation.navigate("ProcessPage");
-    //     } else {
-    //       handleMessage("Error while submitting");
-    //     }
-    //   })
-    //   .catch((err) => {
-    //     console.log(err);
-    //     // console.log(err?.response?.data || err.request);
-    //     // console.log(error.toJSON());1
-    //     setSubmitting(false);
-    //     handleMessage("An error occurred. Check your network and try again");
-    //   });
   };
 
-  const handleMessage = (message, type = "FAILED") => {
+  const handleMessage = (message?, type?) => {
+    if (!type) {
+      type = "FAILED";
+    }
     setMessage(message);
     setMessageType(type);
   };
@@ -136,14 +125,19 @@ const ServicePage = ({ navigation }) => {
     <KeyboardAvoidingWrapper>
       <>
         <StatusBar style="dark" />
+        <WelcomeImage
+          resizeMode="cover"
+          source={require("./../assets/img/img3.jpg")}
+        />
         <InnerContainer>
-          <WelcomeImage
-            resizeMode="cover"
-            source={require("./../assets/img/img3.jpg")}
-          />
-          <ScrollView style={{ width: "100%" }}>
+          <ScrollView
+            style={{
+              height: Dimensions.get("window").height,
+              width: "100%",
+            }}
+          >
             <WelcomeContainer>
-              <PageTitle>E-Tulod</PageTitle>
+              <PageTitle>E-Tulod </PageTitle>
               <SubTitle>Transportation Service</SubTitle>
 
               <Formik

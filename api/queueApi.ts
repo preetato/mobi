@@ -1,15 +1,30 @@
-/**
- * @param bookingId
- */
 import axios from "axios";
-export const cancelBooking = (queueId) => {
+import { User } from "../auth/context";
+import { Driver } from "./driversApi";
+export interface Process {
+  _id: string;
+  destination: string;
+  location: string;
+  cpnum: number;
+  NoOfPassengers: string;
+  status: "ONGOING" | "COMPLETE" | "CANCELLED" | "REJECTED";
+  created_at: Date;
+  updated_at: Date;
+}
+export const cancelBooking = (queueId: string) => {
   return axios
     .post("/queue/booking-cancelled", {
       queueId,
     })
-    .then((res) => {
-      return res.data.message;
-    })
+    .then(
+      (res: {
+        data: {
+          message: string;
+        };
+      }) => {
+        return res.data.message;
+      }
+    )
     .catch((err) => {
       if (err.response.data.error) {
         throw `cancelBooking Error ${err.response.data.error}`;
@@ -20,12 +35,25 @@ export const cancelBooking = (queueId) => {
     });
 };
 
+export interface CreateProcess {
+  destination: string;
+  location: string;
+  cpnum: string;
+  NoOfPassengers: string;
+  user: User["_id"];
+}
 export const createProcess = ({
   destination,
   location,
   cpnum,
   NoOfPassengers,
   user,
+}: {
+  destination: string;
+  location: string;
+  cpnum: string;
+  NoOfPassengers: string;
+  user: string;
 }) => {
   return axios
     .post("/process", {
@@ -36,7 +64,7 @@ export const createProcess = ({
       user,
     })
     .then((res) => {
-      return res.data;
+      return res.data as Process;
     })
     .catch((err) => {
       console.error("error changing process", err.message);
@@ -44,7 +72,11 @@ export const createProcess = ({
     });
 };
 
-export const rejectBooking = (queueId) => {
+export const rejectBooking = (
+  queueId: string
+): Promise<{
+  message: string;
+}> => {
   return axios
     .post("/queue/booking-rejected", {
       queueId,
@@ -65,7 +97,8 @@ export const rejectBooking = (queueId) => {
 /**
  * @param processId
  */
-export const createBooking = (processId) => {
+
+export const createBooking = (processId: string): Promise<Driver> => {
   console.log("createBookingApi sent with processId", processId);
   return axios
     .post("/queue/booking", {
@@ -75,10 +108,13 @@ export const createBooking = (processId) => {
       /**
        * returns driver object
        */
-      return res.data.driver;
+
+      // return (res.data).driver;
+      return res.data.driver as Driver;
     })
     .catch((err) => {
       console.error("error queueing booking", err.message);
+      console.log(err?.response?.data);
       throw err.message;
     });
 };
