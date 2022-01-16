@@ -11,10 +11,11 @@ export interface Process {
   created_at: Date;
   updated_at: Date;
 }
-export const cancelBooking = (queueId: string) => {
+export const cancelBooking = (queueId: string, processId: string) => {
   return axios
     .post("/queue/booking-cancelled", {
       queueId,
+      processId,
     })
     .then(
       (res: {
@@ -73,13 +74,15 @@ export const createProcess = ({
 };
 
 export const rejectBooking = (
-  queueId: string
+  queueId: string,
+  processId: string
 ): Promise<{
   message: string;
 }> => {
   return axios
     .post("/queue/booking-rejected", {
       queueId,
+      processId,
     })
     .then((res) => {
       console.log("res");

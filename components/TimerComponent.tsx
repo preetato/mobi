@@ -2,58 +2,63 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Text, View } from "react-native";
 export default function TimerComponent({
   initialSeconds = 10,
-  isStartTimer = false,
+  isStartTimer: isStartTimerProps,
   actionOnTimerDone = undefined,
 }) {
   const timeoutRef = useRef<undefined | ReturnType<typeof setInterval>>();
-
+  const [isStartTimer, setIsStartTimer] = useState<boolean>(isStartTimerProps);
   const [timerSeconds, setTimerSeconds] = useState(initialSeconds);
-  const [timerDone, setTimerDone] = useState(false);
+
   const startTimerFunc = () => {
+    setTimerSeconds(initialSeconds);
     timeoutRef.current = setInterval(() => {
       setTimerSeconds((prevState) => {
         if (prevState > 0) {
           return prevState - 1;
         } else {
           clearInterval(timeoutRef.current);
-
-          return prevState;
         }
       });
     }, 1000);
   };
 
-  useEffect(() => {
-    console.log("changes to isStartTimer", isStartTimer);
-    if (isStartTimer === true) {
-      startTimerFunc();
-    } else {
-      clearTimeout(timeoutRef.current);
-    }
-  }, [isStartTimer]);
+  // useEffect(() => {
+  //   console.log("changes to isStartTimer", isStartTimer);
+  //   if (isStartTimer === true) {
+  //     startTimerFunc();
+  //   } else {
+  //     console.log("clearing timeout");
+  //     clearTimeout(timeoutRef.current);
+  //   }
+  // }, [isStartTimer]);
 
-  useEffect(() => {
-    if (timerSeconds === 0) {
-      setTimerDone(true);
-      if (actionOnTimerDone) {
-        console.log("actionOnTimerDone");
-        actionOnTimerDone();
-      }
-    }
-  }, [timerSeconds]);
+  // useEffect(() => {
+  //   if (timerSeconds === 0) {
+  //     setTimerDone(true);
+  //     if (actionOnTimerDone) {
+  //       actionOnTimerDone();
+  //     }
+  //   }
+  // }, [timerSeconds]);
 
-  if (timerDone) {
-    return (
-      <Text
-        style={{
-          fontSize: 16,
-          fontWeight: "400",
-        }}
-      >
-        Looking for another Driver...
-      </Text>
-    );
-  }
+  // // useEffect(() => {
+  // //   if (timerDone && isStartTimer === true) {
+  // //     setTimerDone(false);
+  // //   }
+  // // }, [timerDone]);
+
+  // if (timerDone) {
+  //   return (
+  //     <Text
+  //       style={{
+  //         fontSize: 16,
+  //         fontWeight: "400",
+  //       }}
+  //     >
+  //       Looking for another Driver...
+  //     </Text>
+  //   );
+  // }
   return (
     <>
       <Text

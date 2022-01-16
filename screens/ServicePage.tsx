@@ -36,22 +36,20 @@ import {
   Dimensions,
   SafeAreaView,
 } from "react-native";
-
-//keyboard
 import KeyboardAvoidingWrapper from "./../components/KeyboardAvoidingWrapper";
-//colors
-const { darkLight, brand, primary } = Colors;
 import axios from "axios";
 import UserContext from "../auth/context";
 import { getDrivers } from "../api/driversApi";
 import { createProcess, Process, CreateProcess } from "../api/queueApi";
+
+const { darkLight, brand, primary } = Colors;
 
 const ServicePage = ({ navigation }) => {
   const [message, setMessage] = useState<string | undefined>();
   const [messageType, setMessageType] = useState<
     "SUCCESS | FAILED" | "ERROR" | undefined
   >();
-  const { user, setProcess } = useContext(UserContext);
+  const { user, setProcess, queue } = useContext(UserContext);
 
   const handleNoDriversAlert = () => {
     Alert.alert("We're Sorry", "We have no drivers at the moment", [
@@ -112,6 +110,9 @@ const ServicePage = ({ navigation }) => {
         }, 10000);
       });
   };
+  // useEffect(() => {
+  //   console.log("value of queue from service page", queue);
+  // }, [queue]);
 
   const handleMessage = (message?, type?) => {
     if (!type) {

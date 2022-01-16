@@ -1,5 +1,13 @@
 import { StatusBar } from "expo-status-bar";
-import React, { useState, useEffect, useContext, useRef, Props } from "react";
+import React, {
+  useState,
+  useEffect,
+  useContext,
+  useRef,
+  Props,
+  useCallback,
+  useMemo,
+} from "react";
 
 import * as Random from "expo-random";
 import {
@@ -34,10 +42,6 @@ import UserContext from "../auth/context";
 import { rejectBooking, cancelBooking, createBooking } from "../api/queueApi";
 import TimerComponent from "../components/TimerComponent";
 const { width, height } = Dimensions.get("window");
-import axios from "axios";
-import { StackScreenProps } from "@react-navigation/stack";
-import { CompositeScreenProps, NavigationProp } from "@react-navigation/native";
-
 const labels = [
   "Cart",
   "Delivery Address",
@@ -45,7 +49,7 @@ const labels = [
   "Payment Method",
   "Track",
 ];
-
+import { StackNavigationProp } from "@react-navigation/stack";
 const customStyles = {
   stepIndicatorSize: 25,
   currentStepIndicatorSize: 30,
@@ -70,24 +74,54 @@ const customStyles = {
   currentStepLabelColor: "#1a237e",
 };
 
-export default function ProcessPage({ navigation }: { navigation }) {
+export default function ProcessPage({
+  navigation,
+}: {
+  navigation: StackNavigationProp<any, any>;
+}) {
+  // const timeofMount = Date.now();
   const [currentPosition, setCurrentPosition] = useState(0);
   const [disableNextButton, setDisableNextButton] = useState(false);
   const nextStep = () => {
     setCurrentPosition(currentPosition + 1);
   };
-  const [isStartTimer, setIsStartTimer] = useState(false);
+  const [isStartTimer, setIsStartTimer] = useState<number>(Date.now());
   const { processId, setProcess, queue, setQueue } = useContext(UserContext);
+  const [isBackPressed, setIsBackPressed] = useState<boolean>(false);
+  useEffect(() => {
+    navigation.addListener("beforeRemove", () => {
+      setIsBackPressed(true);
+    });
+    return () => {
+      navigation.removeListener("beforeRemove", () => {
+        console.log("beforeRemove navigation removed");
+      });
+    };
+  }, []);
 
   useEffect(() => {
-    navigation.addListener("beforeRemove", (e) => {
-      if (!queue) {
-        // If we don't have unsaved changes, then we don't need to do anything
-        return;
-      } else if (queue) {
-        e.preventDefault();
+    /**
+     * create booking
+     *
+     */
+    if (processId) {
+      createBooking(processId._id)
+        .then((response) => {
+          setQueue(response);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    }
+  }, [processId]);
 
-        cancelBooking(queue._id)
+  /**
+   * Cancel booking on cleanup
+   */
+  useEffect(() => {
+    if (queue && isBackPressed) {
+      return () => {
+        cancelBooking(queue._id, processId._id)
           .then((res) => {
             Alert.alert("Booking Cancelled", "Driver Booking is Cancelled", [
               {
@@ -102,123 +136,32 @@ export default function ProcessPage({ navigation }: { navigation }) {
           })
           .finally(() => {
             setQueue(undefined);
-            navigation.navigate("ServicePage");
             return;
           });
-      }
-    });
-  }, [queue]);
-  useEffect(() => {
-    /**
-     * create booking and start timer
-     *
-     */
+      };
+    }
+  }, [queue, isBackPressed, processId]);
 
-    createBooking(processId._id)
-      .then((response) => {
-        setQueue(response);
+  const actionOnTimerDone = useCallback(() => {
+    rejectBooking(queue._id, processId._id)
+      .then((res) => {
+        return createBooking(processId._id)
+          .then((newDriver) => {
+            setQueue(newDriver);
+          })
+          .then(() => {
+            setIsStartTimer(Date.now());
+          });
       })
       .catch((err) => {
-        console.log(err);
+        console.log("Error on rejectBooking, actionOnTimerDone");
+        console.error(err);
       });
-
-    // return () => {
-    //   cancelBooking(queue._id)
-    //     .then((res) => {
-    //       Alert.alert("Booking Cancelled", "Driver Booking is Cancelled", [
-    //         {
-    //           style: "default",
-    //           text: "OK",
-    //         },
-    //       ]);
-    //     })
-    //     .catch((err) => {
-    //       console.log("Error in cancelBooking");
-    //       console.log(err);
-    //     })
-    //     .finally(() => {
-    //       setQueue(undefined);
-    //       return;
-    //     });
-  }, [processId]);
-
-  useEffect(() => {
-    console.log("Changes in queue", queue);
-  }, [queue]);
-
-  // useEffect(() => {
-  //   /**
-  //    * create booking
-  //    *
-  //    * start timer
-  //    *
-  //    */
-  //   if (!queueId) {
-  //     createBooking(processId._id)
-  //       .then((res) => {
-  //         setQueue(res);
-  //         setIsStartTimer(true);
-  //       })
-  //       .catch((err) => {
-  //         console.error(err);
-  //       });
-  //   }
-  //   navigation.addListener("beforeRemove", (e) => {
-  //     console.log("NAVIGATION LISTENER ACTIVATED");
-  //     console.log(queueId);
-  //     if (!queueId) {
-  //       // If we don't have unsaved changes, then we don't need to do anything
-  //       return;
-  //     } else {
-  //       cancelBooking(queueId)
-  //         .then((res) => {
-  //           Alert.alert("Booking Cancelled", "Driver Booking is Cancelled", [
-  //             {
-  //               style: "default",
-  //               text: "OK",
-  //             },
-  //           ]);
-  //         })
-  //         .catch((err) => {
-  //           console.error(err);
-  //         })
-  //         .finally(() => {
-  //           setQueue(undefined);
-  //         });
-  //     }
-
-  //     e.preventDefault();
-  //   });
-
-  //   // return () => {
-  //   //   if (queueId) {
-
-  //   //   }
-  //   // };
-  // }, [navigation]);
-
-  // useEffect(() => {
-  //   console.log("Changes to QueueId", queueId);
-  // }, [queueId]);
-
-  const actionOnTimerDone = () => {
-    /**
-     * call to reject booking
-     */
-    // rejectBooking(queueId)
-    //   .then((res) => {})
-    //   .then(() => {
-    //     console.log("queueId After actiontimerdone", queueId);
-    //   })
-    //   .catch((err) => {
-    //     console.log("Error on rejectBooking, actionOnTimerDone");
-    //     console.error(err);
-    //   });
-  };
+  }, [queue, processId]);
 
   useEffect(() => {
     if (currentPosition === 0) {
-      setIsStartTimer(true);
+      setIsStartTimer(Date.now());
     }
   }, [currentPosition]);
 
