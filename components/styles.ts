@@ -1,5 +1,5 @@
 import styled from "styled-components/native";
-import { View, Text, TouchableOpacity, TextInput, Image } from "react-native";
+import { StyleSheet } from "react-native";
 import Constants from "expo-constants";
 
 const StatusBarHeight = Constants.statusBarHeight;
@@ -59,24 +59,22 @@ export const WelcomeImage = styled.Image`
 `;
 
 export const PageTitle = styled.Text`
-  font-size: 30px;
+  font-size: 48px;
+  font-weight: 800;
   text-align: center;
-  font-weight: bold;
-  color: ${Colors.brand};
-  padding: 10px;
-  ${(props: { welcome?: any }) =>
-    props.welcome &&
-    `
-    font-size: 35px;
-  `}
+  ${(props: { welcome?: string; color?: string }) =>
+    props.color && `color; ${props.color}`}
+  color: ${(props: { color?: string }) => props.color || Colors.brand};
+  ${(props: { welcome?: string; color?: string }) =>
+    props.welcome && `font-size: 48px;`}
 `;
 
 export const SubTitle = styled.Text`
-  font-size: 18px;
+  font-size: 32px;
   margin-bottom: 20px;
-  letter-spacing: 1px;
-  font-weight: bold;
+  /* letter-spacing: 1px; */
   color: ${tertiary};
+
   ${(props: { welcome?: any }) =>
     props.welcome &&
     `
@@ -86,7 +84,7 @@ export const SubTitle = styled.Text`
 `;
 
 export const StyledTextInput = styled.TextInput`
-  background-color: ${secondary};
+  /* background-color: ${secondary}; */
   padding: 15px;
   padding-left: 55px;
   padding-right: 55px;
@@ -143,15 +141,19 @@ export const ButtonText = styled.Text`
   font-size: 18px;
 `;
 
+export type MsgBoxProps = {
+  type: "SUCCESS" | "ERROR" | "FAILED";
+};
 export const MsgBox = styled.Text`
   text-align: center;
   font-size: 13px;
-  color: ${(props: { type: "SUCCESS" | "ERROR" | "FAILED" }) =>
+  color: ${(props: { type: MsgBoxProps["type"] }) =>
     props.type == "SUCCESS" ? green : red};
 `;
 
 export const Line = styled.View`
-  height: 1px;
+  height: ${(props: { height?: string }) =>
+    props.height ? props.height : `1px`};
   width: 100%;
   background-color: ${darkLight};
   margin-vertical: 10px;
@@ -184,3 +186,13 @@ export const TextLinkContent = styled.Text`
   color: ${secondary};
   font-size: 15px;
 `;
+
+export const textStyles = StyleSheet.create({
+  mainText: {
+    fontSize: 40,
+    fontWeight: "800",
+  },
+  secondaryText: {
+    fontSize: 32,
+  },
+});
