@@ -5,29 +5,32 @@ import { TouchableOpacity } from "react-native-gesture-handler";
 import { Ionicons } from "@expo/vector-icons";
 import uuid from "react-native-uuid";
 
+type ModalContentTemplateProps = {
+  title: string;
+  subTitle: string;
+  buttons?: {
+    component: JSX.Element;
+  }[];
+};
+
 const ModalContentTemplate = ({
   title,
   subTitle,
   buttons,
   onClose,
   hideCloseButton,
-}: {
-  title: string;
-  subTitle: string;
-  buttons?: {
-    component: JSX.Element;
-  }[];
-} & (
-  | {
-      onClose: () => void;
-      hideCloseButton?: never | false;
-    }
-  | {
-      hideCloseButton: true;
-      onClose?: never;
-      // onClose?: never;
-    }
-)) => {
+}: ModalContentTemplateProps &
+  (
+    | {
+        onClose: () => void;
+        hideCloseButton?: never | false;
+      }
+    | {
+        hideCloseButton: true;
+        onClose?: never;
+        // onClose?: never;
+      }
+  )) => {
   // useEffect(() => {
   //   return () => {
   //     onClose();
