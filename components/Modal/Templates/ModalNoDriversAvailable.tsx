@@ -1,11 +1,7 @@
 import React from "react";
 import ModalContentTemplate from "../ModalContentTemplate";
 
-const ModalNoDriversAvailableModal = ({
-  onClose,
-}: {
-  onClose?: () => void;
-}) => {
+const ModalNoDriversAvailableModal = ({ onClose }: { onClose: () => void }) => {
   return (
     <ModalContentTemplate
       title="No Drivers"
@@ -16,9 +12,7 @@ const ModalNoDriversAvailableModal = ({
       //   },
       // ]}
       onClose={() => {
-        if (onClose) {
-          onClose();
-        }
+        onClose();
       }}
     />
   );
