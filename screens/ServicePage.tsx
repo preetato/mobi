@@ -1,5 +1,4 @@
-import React, { useContext, useState, useEffect } from "react";
-import { StatusBar } from "expo-status-bar";
+import React, { useContext, useState, useEffect, ChangeEvent } from "react";
 
 //formik
 import { Formik } from "formik";
@@ -11,22 +10,11 @@ import { Ionicons } from "@expo/vector-icons";
 import faker from "faker";
 
 import {
-  StyledContainer,
   MsgBox,
-  InnerContainer,
   PageTitle,
   SubTitle,
-  StyledFormArea,
-  LeftIcon,
-  RightIcon,
   StyledInputLabel,
-  StyledTextInput,
   Colors,
-  ButtonText,
-  StyledButton,
-  WelcomeContainer,
-  WelcomeImage,
-  Line,
 } from "./../components/styles";
 import {
   View,
@@ -35,19 +23,25 @@ import {
   Alert,
   Dimensions,
   SafeAreaView,
+  TextInput,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
-import KeyboardAvoidingWrapper from "./../components/KeyboardAvoidingWrapper";
 import axios from "axios";
 import UserContext from "../auth/context";
 import { getDrivers } from "../api/driversApi";
 import { createProcess, Process, CreateProcess } from "../api/queueApi";
+// import { CancelButton, ResponseButton } from "./ProcessDriverLookUp";
+import type { MsgBoxProps } from "../components/styles";
+import ResponseButton from "../components/Buttons/ResponseButton";
+import CancelButton from "../components/Buttons/CancelButton";
 
 const { darkLight, brand, primary } = Colors;
 
 const ServicePage = ({ navigation }) => {
   const [message, setMessage] = useState<string | undefined>();
   const [messageType, setMessageType] = useState<
-    "SUCCESS | FAILED" | "ERROR" | undefined
+    MsgBoxProps["type"] | undefined
   >();
   const { user, setProcess, queue } = useContext(UserContext);
 
@@ -94,14 +88,15 @@ const ServicePage = ({ navigation }) => {
         }).then((createProcessResponse) => {
           setProcess(createProcessResponse);
           setSubmitting(false);
-          navigation.navigate("ProcessPage");
+          // navigation.navigate("ProcessPage");
+          navigation.navigate("ProcessDriverLookUp");
         });
       })
       .catch((err) => {
         if (err?.code === "NO DRIVER") {
           handleNoDriversAlert();
         }
-        console.log("Error in getdtign drivers from servicepage");
+        console.log("Error in getting drivers from servicepage");
         console.log(err);
       })
       .finally(() => {
@@ -123,57 +118,101 @@ const ServicePage = ({ navigation }) => {
   };
 
   return (
-    <KeyboardAvoidingWrapper>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={{
+        flex: 1,
+        justifyContent: "center",
+        flexDirection: "column",
+      }}
+    >
       <>
-        <StatusBar style="dark" />
-        <WelcomeImage
+        {/* <StatusBar style="dark" /> */}
+        <SafeAreaView />
+        {/* <WelcomeImage
           resizeMode="cover"
           source={require("./../assets/img/img3.jpg")}
-        />
-        <InnerContainer>
+        /> */}
+        <View
+          style={{
+            marginTop: 16,
+            padding: 16,
+            paddingTop: 32,
+            flex: 1,
+            flexDirection: "column",
+            maxHeight: Dimensions.get("window").height,
+          }}
+        >
           <ScrollView
             style={{
               height: Dimensions.get("window").height,
               width: "100%",
             }}
           >
-            <WelcomeContainer>
+            <View
+              style={{
+                flex: 1,
+                width: "100%",
+                alignItems: "flex-start",
+                // backgroundColor: "red",
+              }}
+            >
               <PageTitle>E-Tulod </PageTitle>
-              <SubTitle>Transportation Service</SubTitle>
-
-              <Formik
-                initialValues={{
-                  // currentLocation: "",
-                  // destination: "",
-                  // ContactNo: "",
-                  // noOfPassengers: "",
-                  currentLocation: faker.address.country(),
-                  destination: faker.address.country(),
-                  ContactNo: "09498460475",
-                  noOfPassengers: Math.floor(Math.random() * 10).toString(),
-                }}
-                onSubmit={(values, { setSubmitting }) => {
-                  if (
-                    values.currentLocation == "" ||
-                    values.destination == "" ||
-                    values.ContactNo == "" ||
-                    values.noOfPassengers == ""
-                  ) {
-                    handleMessage("Please fill all the empty fields!");
-                    setSubmitting(false);
-                  } else {
-                    handleConfirm(values, setSubmitting);
-                  }
+              <SubTitle
+                style={{
+                  color: "black",
                 }}
               >
-                {({
-                  handleChange,
-                  handleBlur,
-                  handleSubmit,
-                  values,
-                  isSubmitting,
-                }) => (
-                  <StyledFormArea>
+                Transportation Service
+              </SubTitle>
+            </View>
+
+            <Formik
+              initialValues={{
+                // currentLocation: "",
+                // destination: "",
+                // ContactNo: "",
+                // noOfPassengers: "",
+                currentLocation: faker.address.country(),
+                destination: faker.address.country(),
+                ContactNo: "09498460475",
+                noOfPassengers: Math.floor(Math.random() * 10).toString(),
+              }}
+              onSubmit={(values, { setSubmitting }) => {
+                console.log("values", values);
+                if (
+                  values.currentLocation == "" ||
+                  values.destination == "" ||
+                  values.ContactNo == "" ||
+                  values.noOfPassengers == ""
+                ) {
+                  handleMessage("Please fill all the empty fields!");
+                  setSubmitting(false);
+                } else {
+                  handleConfirm(values, setSubmitting);
+                }
+              }}
+            >
+              {({
+                handleChange,
+                handleBlur,
+                handleSubmit,
+                values,
+                isSubmitting,
+              }) => (
+                <View
+                  style={{
+                    width: "100%",
+                  }}
+                >
+                  <View
+                    style={{
+                      padding: 16,
+                      // borderWidth: 1,
+                      // borderColor: "#00000030",
+                      // borderRadius: 8,
+                    }}
+                  >
                     <MyTextInput
                       label="Current Location"
                       icon="location-sharp"
@@ -215,46 +254,114 @@ const ServicePage = ({ navigation }) => {
                       keyboardType="numeric"
                       value={values.noOfPassengers}
                     />
+                  </View>
 
+                  <View
+                    style={{
+                      marginTop: 16,
+                      padding: 16,
+                      // borderWidth: 1,
+                      // borderColor: "#00000030",
+                      // borderRadius: 8,
+                    }}
+                  >
                     <MsgBox type={messageType}>{message}</MsgBox>
 
-                    {!isSubmitting && (
-                      <StyledButton onPress={handleSubmit}>
-                        <ButtonText>Confirm</ButtonText>
-                      </StyledButton>
+                    {isSubmitting ? (
+                      <ResponseButton disabled={true}>
+                        <ActivityIndicator
+                          style={{
+                            marginVertical: -4,
+                          }}
+                          size="large"
+                          color={primary}
+                        />
+                      </ResponseButton>
+                    ) : (
+                      <ResponseButton
+                        onPress={() => handleSubmit()}
+                        text={"Confirm"}
+                      />
                     )}
 
-                    {isSubmitting && (
-                      <StyledButton disabled={true}>
-                        <ActivityIndicator size="large" color={primary} />
-                      </StyledButton>
-                    )}
-
-                    <Line />
-                    <StyledButton
+                    <CancelButton
                       onPress={() => navigation.navigate("Welcome")}
-                    >
-                      <ButtonText>Back</ButtonText>
-                    </StyledButton>
-                  </StyledFormArea>
-                )}
-              </Formik>
-            </WelcomeContainer>
+                      style={{
+                        backgroundColor: Colors.darkLight,
+                      }}
+                      text={`Back`}
+                    />
+                  </View>
+                </View>
+              )}
+            </Formik>
           </ScrollView>
-        </InnerContainer>
+        </View>
       </>
-    </KeyboardAvoidingWrapper>
+    </KeyboardAvoidingView>
   );
 };
 
 const MyTextInput = ({ label, icon, ...props }) => {
   return (
-    <View>
-      <LeftIcon>
-        <Ionicons name={icon} size={30} color={brand} />
-      </LeftIcon>
-      <StyledInputLabel>{label}</StyledInputLabel>
-      <StyledTextInput {...props} />
+    <View
+      style={{
+        flex: 1,
+        flexDirection: "column",
+        marginBottom: 16,
+      }}
+    >
+      <StyledInputLabel
+        style={{
+          color: "#000000AF",
+        }}
+      >
+        {label}
+      </StyledInputLabel>
+
+      <View
+        style={{
+          flexGrow: 1,
+          flexDirection: "row",
+        }}
+      >
+        <View
+          style={{
+            flex: 1,
+            flexDirection: "row",
+            flexGrow: 0,
+            flexShrink: 0,
+            flexBasis: 40,
+            bottom: 0,
+            top: 0,
+            left: 16,
+            alignItems: "center",
+            // backgroundColor: "red",
+            position: "absolute",
+          }}
+        >
+          <Ionicons
+            style={{
+              left: 0,
+            }}
+            name={icon}
+            size={32}
+            color={brand}
+          />
+        </View>
+        <TextInput
+          style={{
+            fontSize: 24,
+            padding: 12,
+            borderWidth: 2,
+            borderRadius: 4,
+            borderColor: Colors.brand,
+            paddingLeft: 56,
+            flexGrow: 1,
+          }}
+          {...props}
+        />
+      </View>
     </View>
   );
 };
