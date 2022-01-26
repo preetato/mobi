@@ -160,7 +160,8 @@ const ServicePage = ({ navigation }) => {
               <PageTitle>E-Tulod </PageTitle>
               <SubTitle
                 style={{
-                  color: "black",
+                  fontWeight: "700",
+                  color: Colors.secondary,
                 }}
               >
                 Transportation Service
@@ -205,14 +206,7 @@ const ServicePage = ({ navigation }) => {
                     width: "100%",
                   }}
                 >
-                  <View
-                    style={{
-                      padding: 16,
-                      // borderWidth: 1,
-                      // borderColor: "#00000030",
-                      // borderRadius: 8,
-                    }}
-                  >
+                  <View>
                     <MyTextInput
                       label="Current Location"
                       icon="location-sharp"
@@ -259,10 +253,6 @@ const ServicePage = ({ navigation }) => {
                   <View
                     style={{
                       marginTop: 16,
-                      padding: 16,
-                      // borderWidth: 1,
-                      // borderColor: "#00000030",
-                      // borderRadius: 8,
                     }}
                   >
                     <MsgBox type={messageType}>{message}</MsgBox>
@@ -313,7 +303,8 @@ const MyTextInput = ({ label, icon, ...props }) => {
     >
       <StyledInputLabel
         style={{
-          color: "#000000AF",
+          color: Colors.brand,
+          fontWeight: "500",
         }}
       >
         {label}
@@ -358,6 +349,8 @@ const MyTextInput = ({ label, icon, ...props }) => {
             borderColor: Colors.brand,
             paddingLeft: 56,
             flexGrow: 1,
+            color: Colors.secondary,
+            fontWeight: "400",
           }}
           {...props}
         />
