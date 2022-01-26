@@ -46,14 +46,12 @@ const ModalTimerDoneRejectBookingWarningModal = ({
             <CancelButton
               onPress={() => {
                 cancelBookingFn();
-                onClose();
               }}
               text="Cancel Booking"
             />
           ),
         },
       ]}
-      // onClose={() => {}}
       hideCloseButton
     />
   );
