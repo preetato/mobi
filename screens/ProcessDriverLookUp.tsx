@@ -1,16 +1,4 @@
-import {
-  Animated,
-  Dimensions,
-  GestureResponderEvent,
-  Modal,
-  Pressable,
-  StyleProp,
-  StyleSheet,
-  Text,
-  TouchableOpacityProps,
-  View,
-  ViewStyle,
-} from "react-native";
+import { Animated, StyleSheet, Text, View } from "react-native";
 import React, { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import TimerComponent from "../components/TimerComponent";
@@ -113,10 +101,11 @@ const ProcessDriverLookUp = ({
     useContext(UserContext);
   const [timerStart, setTimerStart] = useState<string>(Date.now().toString());
   const triggerTimerStart = () => {
-    setTimerSeconds(3);
+    setTimerSeconds(10);
     setTimerStart(Date.now().toString());
   };
-  const [timerSeconds, setTimerSeconds] = useState<number>(3);
+  const [timerSeconds, setTimerSeconds] = useState<number>(10);
+  const [timerStop, setTimerStop] = useState(false);
 
   /**
    * Add listener with action and cleanUpFunction
@@ -127,9 +116,7 @@ const ProcessDriverLookUp = ({
         /**
          * set modal open notifying that booking has been cancelled
          */
-        // setModalOpen({
-        //   message: `Booking Cancelled`,
-        // });
+
         setProcess(null);
         setModal(
           <ModalBookingCancelled
@@ -196,7 +183,13 @@ const ProcessDriverLookUp = ({
         }}
         cancelBookingFn={() => {
           navigation.navigate("ServicePage");
-          setModal(undefined);
+          setModal(
+            <ModalBookingCancelled
+              onClose={() => {
+                setModal(undefined);
+              }}
+            />
+          );
         }}
         bookAnotherFn={() => {
           createBooking(processId._id)
@@ -207,14 +200,20 @@ const ProcessDriverLookUp = ({
               setResponseButtonHidden(false);
             })
             .catch((err) => {
-              setModal(<ModalNoDriversAvailableModal />);
+              setModal(
+                <ModalNoDriversAvailableModal
+                  onClose={() => {
+                    navigation.navigate("ServicePage");
+                    setModal(undefined);
+                  }}
+                />
+              );
             });
         }}
       />
     );
   };
 
-  const [timerStop, setTimerStop] = useState(false);
   return (
     <>
       <SafeAreaView />
@@ -233,7 +232,7 @@ const ProcessDriverLookUp = ({
         <Text style={styles.secondaryText}>
           Please wait for a driver to send you a text message
         </Text>
-        <Line />
+        {/* <Line /> */}
         <FadingRepeatedAnimatedEffect>
           {!timerStop && (
             <TimerComponent
@@ -263,6 +262,7 @@ const ProcessDriverLookUp = ({
                * next phase
                */
               setTimerStop(true);
+              setResponseButtonHidden(true);
             }}
             style={{
               display: responseButtonHidden ? "none" : undefined,
@@ -306,7 +306,7 @@ const styles = StyleSheet.create({
   },
   rootContainer: {
     marginTop: 16,
-    padding: 8,
+    padding: 16,
     paddingTop: 32,
     flex: 1,
     flexDirection: "column",
