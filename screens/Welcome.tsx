@@ -1,6 +1,6 @@
 import React, { useContext, useState } from "react";
 import { StatusBar } from "expo-status-bar";
-import { View } from "react-native";
+import { Text, View } from "react-native";
 import {
   Avatar,
   WelcomeImage,
@@ -8,12 +8,12 @@ import {
   SubTitle,
   StyledFormArea,
   StyledButton,
-  StyledButtonn,
   InnerContainer,
   WelcomeContainer,
   ButtonText,
   Line,
   Colors,
+  textStyles,
 } from "./../components/styles";
 import storage from "../utility/storage";
 import UserContext from "../auth/context";
@@ -35,8 +35,17 @@ const Welcome = ({ navigation }) => {
           source={require("./../assets/img/img3.jpg")}
         />
         <WelcomeContainer>
-          <PageTitle welcome={true}>E-Tulod</PageTitle>
-          <SubTitle welcome={true}>Welcome!</SubTitle>
+          <SubTitle
+            style={{
+              marginBottom: -16,
+            }}
+            welcome={true}
+          >
+            Welcome to
+          </SubTitle>
+          <PageTitle>E-Tulod</PageTitle>
+
+          {/* <Text></Text> */}
           <StyledFormArea>
             <Avatar
               resizeMode="cover"

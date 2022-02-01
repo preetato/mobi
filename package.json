@@ -36,6 +36,7 @@
     "react-native-screens": "~3.8.0",
     "react-native-step-indicator": "^1.0.3",
     "react-native-table-component": "^1.2.1",
+    "react-native-uuid": "^2.0.1",
     "react-native-web": "0.17.1",
     "react-navigation": "^4.4.4",
     "styled-components": "^5.3.1"

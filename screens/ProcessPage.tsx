@@ -85,9 +85,13 @@ export default function ProcessPage({
   const nextStep = () => {
     setCurrentPosition(currentPosition + 1);
   };
-  const [isStartTimer, setIsStartTimer] = useState<number>(Date.now());
+  // const [isStartTimer, setIsStartTimer] = useState<number>(Date.now());
   const { processId, setProcess, queue, setQueue } = useContext(UserContext);
   const [isBackPressed, setIsBackPressed] = useState<boolean>(false);
+  const [timerStart, setTimerStart] = useState<string>(Date.now().toString());
+  const triggerTimerStart = () => {
+    setTimerStart(Date.now().toString());
+  };
   useEffect(() => {
     navigation.addListener("beforeRemove", () => {
       setIsBackPressed(true);
@@ -150,7 +154,7 @@ export default function ProcessPage({
             setQueue(newDriver);
           })
           .then(() => {
-            setIsStartTimer(Date.now());
+            triggerTimerStart();
           });
       })
       .catch((err) => {
@@ -161,7 +165,7 @@ export default function ProcessPage({
 
   useEffect(() => {
     if (currentPosition === 0) {
-      setIsStartTimer(Date.now());
+      triggerTimerStart();
     }
   }, [currentPosition]);
 
@@ -195,7 +199,7 @@ export default function ProcessPage({
 
   return (
     <View style={styles.container}>
-      <StatusBar backgroundColor="#000" barStyle="light-content" />
+      {/* <StatusBar backgroundColor="#000" barStyle="light" /> */}
       <View style={styles.header}>
         <Text style={styles.HeaderText}>E-Tulod</Text>
       </View>
@@ -221,8 +225,8 @@ export default function ProcessPage({
                     }}
                   >
                     <TimerComponent
-                      initialSeconds={3}
-                      isStartTimer={isStartTimer}
+                      initialSeconds={10}
+                      timerStart={timerStart}
                       actionOnTimerDone={actionOnTimerDone}
                     />
                   </View>

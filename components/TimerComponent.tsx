@@ -1,13 +1,37 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  Dispatch,
+  SetStateAction,
+} from "react";
 import { Text, View } from "react-native";
 export default function TimerComponent({
   initialSeconds = 10,
-  isStartTimer: isStartTimerProps,
   actionOnTimerDone = undefined,
+  timerStart,
+  hiddenText,
+  text,
+  setTimerSecondProps,
+}: {} & {
+  timerStart: string;
+  initialSeconds: number;
+  actionOnTimerDone: () => void;
+  hiddenText?: true;
+  text?: string;
+  setTimerSecondProps: Dispatch<SetStateAction<number>>;
 }) {
+  const timerNow = useRef<typeof timerStart>(timerStart);
   const timeoutRef = useRef<undefined | ReturnType<typeof setInterval>>();
-  const [isStartTimer, setIsStartTimer] = useState<boolean>(isStartTimerProps);
   const [timerSeconds, setTimerSeconds] = useState(initialSeconds);
+
+  useEffect(() => {
+    if (timerStart !== timerNow.current) {
+      timerNow.current = timerStart;
+      startTimerFunc();
+    }
+  }, [timerStart]);
 
   const startTimerFunc = () => {
     setTimerSeconds(initialSeconds);
@@ -22,70 +46,58 @@ export default function TimerComponent({
     }, 1000);
   };
 
-  // useEffect(() => {
-  //   console.log("changes to isStartTimer", isStartTimer);
-  //   if (isStartTimer === true) {
-  //     startTimerFunc();
-  //   } else {
-  //     console.log("clearing timeout");
-  //     clearTimeout(timeoutRef.current);
-  //   }
-  // }, [isStartTimer]);
+  useEffect(() => {
+    setTimerSecondProps(timerSeconds);
+  }, [timerSeconds]);
 
-  // useEffect(() => {
-  //   if (timerSeconds === 0) {
-  //     setTimerDone(true);
-  //     if (actionOnTimerDone) {
-  //       actionOnTimerDone();
-  //     }
-  //   }
-  // }, [timerSeconds]);
+  useEffect(() => {
+    if (timerSeconds === 0) {
+      actionOnTimerDone();
+    }
+  }, [timerSeconds]);
 
-  // // useEffect(() => {
-  // //   if (timerDone && isStartTimer === true) {
-  // //     setTimerDone(false);
-  // //   }
-  // // }, [timerDone]);
-
-  // if (timerDone) {
-  //   return (
-  //     <Text
-  //       style={{
-  //         fontSize: 16,
-  //         fontWeight: "400",
-  //       }}
-  //     >
-  //       Looking for another Driver...
-  //     </Text>
-  //   );
-  // }
   return (
     <>
       <Text
         style={{
           fontSize: 16,
           fontWeight: "400",
+          display: hiddenText ? "none" : undefined,
         }}
       >
         Waiting for driver to Respond:
       </Text>
       <View style={{ flexDirection: "row", alignItems: "center" }}>
-        <Text
-          style={{
-            // flex: 1,
-            fontWeight: "700",
-            fontSize: 32,
-          }}
-        >
-          {timerSeconds}
-        </Text>
-        <Text
-          style={{
-            marginLeft: 8,
-          }}
-        >
-          Seconds Remaining
-        </Text>
+        {timerSeconds ? (
+          <>
+            <Text
+              style={{
+                // flex: 1,
+                fontWeight: "700",
+                fontSize: 32,
+              }}
+            >
+              {timerSeconds.toString()}
+            </Text>
+            <Text
+              style={{
+                marginLeft: 8,
+              }}
+            >
+              Seconds Remaining
+            </Text>
+          </>
+        ) : (
+          <Text
+            style={{
+              marginTop: 8,
+              fontWeight: "400",
+              fontSize: 24,
+            }}
+          >
+            {text || `Time's Up! Looking for another Driver`}
+          </Text>
+        )}
       </View>
     </>
   );
